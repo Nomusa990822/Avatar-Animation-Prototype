@@ -1,0 +1,176 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-main: #0f172a;
+  --bg-panel: #111827;
+  --bg-card: #1f2937;
+  --text-main: #f8fafc;
+  --text-soft: #cbd5e1;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.left-panel {
+  width: 36%;
+  min-width: 320px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+}
+
+.panel-content {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  font-size: 2.2rem;
+  line-height: 1.1;
+}
+
+.subtitle {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.card h2 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.examples-list {
+  padding-left: 18px;
+  color: var(--text-soft);
+  line-height: 1.8;
+}
+
+.input-label {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: var(--text-soft);
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text-main);
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 1rem;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: var(--accent);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+.intent-text {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #93c5fd;
+}
+
+.right-panel {
+  position: relative;
+  flex: 1;
+  min-height: 100vh;
+  background: #020617;
+}
+
+#sceneCanvas {
+  width: 100%;
+  height: 100vh;
+  display: block;
+}
+
+.viewer-overlay {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .right-panel {
+    height: 60vh;
+    min-height: 60vh;
+  }
+
+  #sceneCanvas {
+    height: 60vh;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+}
