@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Natural Language → Avatar Animation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="left-panel">
+      <div class="panel-content">
+        <p class="eyebrow">AI Engineering Challenge</p>
+        <h1>Natural Language → Avatar Animation</h1>
+        <p class="subtitle">
+          Type a command and let the system interpret what the avatar should do.
+        </p>
+
+        <div class="card">
+          <h2>Try commands like:</h2>
+          <ul class="examples-list">
+            <li>Wave hello</li>
+            <li>Walk forward</li>
+            <li>Walk backward</li>
+            <li>Point left</li>
+            <li>Point right</li>
+            <li>Clap</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <label for="commandInput" class="input-label">Command</label>
+          <div class="input-group">
+            <input
+              type="text"
+              id="commandInput"
+              placeholder="e.g. Wave hello"
+              autocomplete="off"
+            />
+            <button id="sendBtn">Run</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Detected intent</h2>
+          <p id="intentText" class="intent-text">idle</p>
+        </div>
+
+        <div class="card">
+          <h2>AI explanation</h2>
+          <p id="explanationText">
+            The avatar is waiting for a command.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>Status</h2>
+          <p id="statusText">Scene loading...</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel">
+      <canvas id="sceneCanvas"></canvas>
+      <div class="viewer-overlay">
+        <span>3D Viewer</span>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
