@@ -7,42 +7,42 @@ def interpret_command(command: str) -> dict:
     text = command.lower().strip()
 
     rules = [
-        {
-            "keywords": ["wave", "hello", "hi", "greet"],
-            "intent": "wave",
-            "animation": "wave",
-            "explanation": "The avatar performs a friendly wave to greet the learner."
-        },
-        {
-            "keywords": ["walk forward", "move forward", "go forward", "ahead"],
-            "intent": "walk_forward",
-            "animation": "walk",
-            "explanation": "The avatar walks forward to demonstrate movement."
-        },
-        {
-            "keywords": ["walk backward", "move backward", "go back", "step back"],
-            "intent": "walk_backward",
-            "animation": "walk_back",
-            "explanation": "The avatar moves backward in response to the command."
-        },
-        {
-            "keywords": ["point left"],
-            "intent": "point_left",
-            "animation": "point_left",
-            "explanation": "The avatar points to the left to indicate a direction or object."
-        },
-        {
-            "keywords": ["point right"],
-            "intent": "point_right",
-            "animation": "point_right",
-            "explanation": "The avatar points to the right to indicate a direction or object."
-        },
-        {
-            "keywords": ["clap", "applaud"],
-            "intent": "clap",
-            "animation": "clap",
-            "explanation": "The avatar claps to show approval or celebration."
-        }
+    {
+        "keywords": ["wave", "hello", "hi"],
+        "intent": "wave",
+        "animation": "wave",
+        "explanation": "The avatar waves to greet the user."
+    },
+    {
+        "keywords": ["walk", "forward", "move"],
+        "intent": "walk_forward",
+        "animation": "walk",
+        "explanation": "The avatar walks forward."
+    },
+    {
+        "keywords": ["back", "backward"],
+        "intent": "walk_backward",
+        "animation": "walk",
+        "explanation": "The avatar walks backward."
+    },
+    {
+        "keywords": ["left"],
+        "intent": "point_left",
+        "animation": "point",
+        "explanation": "The avatar points left."
+    },
+    {
+        "keywords": ["right"],
+        "intent": "point_right",
+        "animation": "point",
+        "explanation": "The avatar points right."
+    },
+    {
+        "keywords": ["clap"],
+        "intent": "clap",
+        "animation": "clap",
+        "explanation": "The avatar claps."
+    }
     ]
 
     for rule in rules:
