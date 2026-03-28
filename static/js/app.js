@@ -182,27 +182,37 @@ function mapIntentToAnimation(intent) {
     return null;
   }
 
+  const keys = Object.keys(actions);
+
+  const find = (options) => {
+    for (let opt of options) {
+      let match = keys.find(k => k.includes(opt));
+      if (match) return match;
+    }
+    return null;
+  };
+
   if (intent === "wave") {
-    return findBestAnimation(["wave", "hello", "greet"]);
+    return find(["wave", "hello", "yes"]);
   }
 
   if (intent === "walk_forward") {
-    return findBestAnimation(["walk", "walking", "run"]);
+    return find(["walking", "running"]);
   }
 
   if (intent === "walk_backward") {
-    return findBestAnimation(["walk", "walking", "back"]);
+    return find(["walking", "running"]);
   }
 
   if (intent === "point_left" || intent === "point_right") {
-    return findBestAnimation(["point", "gesture"]);
+    return find(["yes", "thumb", "gesture"]);
   }
 
   if (intent === "clap") {
-    return findBestAnimation(["clap", "celebrate", "applause"]);
+    return find(["dance", "punch"]);
   }
 
-  return findBestAnimation(["idle", "breathing", "standing"]);
+  return find(["idle", "standing"]);
 }
 
 async function sendCommand() {
