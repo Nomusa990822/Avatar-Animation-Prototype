@@ -1,6 +1,6 @@
 import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.160.1/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'https://unpkg.com/three@0.160.1/examples/jsm/loaders/FBXLoader.js';
 
 const canvas = document.getElementById('sceneCanvas');
 const commandInput = document.getElementById('commandInput');
@@ -18,7 +18,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 1.5, 4);
+camera.position.set(0, 1.6, 4.5);
 
 const renderer = new THREE.WebGLRenderer({
   canvas,
@@ -37,7 +37,7 @@ controls.update();
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 2.2);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.8);
 dirLight.position.set(3, 5, 3);
 scene.add(dirLight);
 
@@ -46,7 +46,7 @@ const floor = new THREE.Mesh(
   new THREE.MeshStandardMaterial({
     color: 0x0f172a,
     metalness: 0.1,
-    roughness: 0.9
+    roughness: 0.95
   })
 );
 floor.rotation.x = -Math.PI / 2;
@@ -57,28 +57,35 @@ const gridHelper = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
 scene.add(gridHelper);
 
 let avatar = null;
-const loader = new GLTFLoader();
 
+const fbxLoader = new FBXLoader();
 statusText.textContent = 'Loading avatar model...';
 
-loader.load(
-  '/static/models/avatar.glb',
-  (gltf) => {
-    avatar = gltf.scene;
+fbxLoader.load(
+  '/static/models/avatar.fbx',
+  (object) => {
+    avatar = object;
 
-    centerAndScaleModel(avatar);
+    avatar.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
 
+    centerAndScaleFBX(avatar);
     scene.add(avatar);
+
     statusText.textContent = 'Avatar loaded successfully.';
   },
   undefined,
   (error) => {
     console.error('Error loading avatar:', error);
-    statusText.textContent = 'Failed to load avatar.glb. Check the model path and file name.';
+    statusText.textContent = 'Failed to load avatar.fbx. Check the model path and file name.';
   }
 );
 
-function centerAndScaleModel(model) {
+function centerAndScaleFBX(model) {
   const box = new THREE.Box3().setFromObject(model);
   const size = new THREE.Vector3();
   const center = new THREE.Vector3();
@@ -86,23 +93,18 @@ function centerAndScaleModel(model) {
   box.getSize(size);
   box.getCenter(center);
 
-  model.position.sub(center);
+  model.position.x -= center.x;
+  model.position.z -= center.z;
 
-  const maxDimension = Math.max(size.x, size.y, size.z);
-  if (maxDimension > 0) {
+  const height = size.y;
+  if (height > 0) {
     const targetHeight = 2.2;
-    const scale = targetHeight / size.y;
+    const scale = targetHeight / height;
     model.scale.setScalar(scale);
   }
 
-  const newBox = new THREE.Box3().setFromObject(model);
-  const newCenter = new THREE.Vector3();
-  newBox.getCenter(newCenter);
-
-  model.position.x -= newCenter.x;
-  model.position.z -= newCenter.z;
-
-  const minY = newBox.min.y;
+  const updatedBox = new THREE.Box3().setFromObject(model);
+  const minY = updatedBox.min.y;
   model.position.y -= minY;
 }
 
@@ -131,11 +133,40 @@ async function sendCommand() {
     explanationText.textContent = data.explanation;
     intentText.textContent = data.intent;
     statusText.textContent = `Ready. Suggested animation: ${data.animation}`;
+
+    handleCommandVisualization(data);
   } catch (error) {
     console.error('Error sending command:', error);
     explanationText.textContent = 'There was a problem contacting the backend.';
     intentText.textContent = 'error';
     statusText.textContent = 'Request failed.';
+  }
+}
+
+function handleCommandVisualization(data) {
+  if (!avatar) return;
+
+  switch (data.intent) {
+    case 'wave':
+      avatar.rotation.y = 0;
+      break;
+    case 'point_left':
+      avatar.rotation.y = Math.PI / 6;
+      break;
+    case 'point_right':
+      avatar.rotation.y = -Math.PI / 6;
+      break;
+    case 'walk_forward':
+      avatar.position.z -= 0.2;
+      break;
+    case 'walk_backward':
+      avatar.position.z += 0.2;
+      break;
+    case 'clap':
+      avatar.rotation.y += 0.1;
+      break;
+    default:
+      break;
   }
 }
 
