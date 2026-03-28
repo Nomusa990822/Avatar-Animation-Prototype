@@ -57,8 +57,10 @@ const grid = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
 scene.add(grid);
 
 let avatar = null;
-let avatarBasePosition = new THREE.Vector3(0, 0, 0);
-let isAvatarLoaded = false;
+let mixer = null;
+let actions = {};
+let activeAction = null;
+const clock = new THREE.Clock();
 
 statusText.textContent = "Loading avatar model...";
 
@@ -80,11 +82,29 @@ loader.load(
     });
 
     centerAndScaleModel(avatar);
-    avatarBasePosition.copy(avatar.position);
-
     scene.add(avatar);
-    isAvatarLoaded = true;
-    statusText.textContent = "Avatar loaded successfully.";
+
+    if (gltf.animations && gltf.animations.length > 0) {
+      mixer = new THREE.AnimationMixer(avatar);
+
+      gltf.animations.forEach((clip) => {
+        const action = mixer.clipAction(clip);
+        actions[clip.name.toLowerCase()] = action;
+        console.log("Loaded animation:", clip.name);
+      });
+
+      const animationNames = Object.keys(actions);
+      statusText.textContent = `Avatar loaded. Animations found: ${animationNames.join(", ") || "none"}`;
+
+      // Try to play an idle animation first
+      const idleName = findBestAnimation(["idle", "breathing", "standing"]);
+      if (idleName) {
+        playAnimation(idleName);
+      }
+    } else {
+      statusText.textContent = "Avatar loaded, but no built-in animations were found.";
+    }
+
     console.log("Avatar loaded:", avatar);
   },
   function (xhr) {
@@ -119,15 +139,78 @@ function centerAndScaleModel(model) {
   model.position.y -= minY;
 }
 
+function fadeToAction(newAction, duration = 0.3) {
+  if (!newAction) return;
+
+  if (activeAction && activeAction !== newAction) {
+    activeAction.fadeOut(duration);
+  }
+
+  newAction.reset();
+  newAction.fadeIn(duration);
+  newAction.play();
+  activeAction = newAction;
+}
+
+function playAnimation(name) {
+  const action = actions[name.toLowerCase()];
+  if (!action) {
+    console.warn("Animation not found:", name);
+    return false;
+  }
+
+  fadeToAction(action, 0.25);
+  return true;
+}
+
+function findBestAnimation(candidates) {
+  const keys = Object.keys(actions);
+
+  for (const candidate of candidates) {
+    const exact = keys.find((key) => key === candidate);
+    if (exact) return exact;
+
+    const partial = keys.find((key) => key.includes(candidate));
+    if (partial) return partial;
+  }
+
+  return null;
+}
+
+function mapIntentToAnimation(intent) {
+  if (!actions || Object.keys(actions).length === 0) {
+    return null;
+  }
+
+  if (intent === "wave") {
+    return findBestAnimation(["wave", "hello", "greet"]);
+  }
+
+  if (intent === "walk_forward") {
+    return findBestAnimation(["walk", "walking", "run"]);
+  }
+
+  if (intent === "walk_backward") {
+    return findBestAnimation(["walk", "walking", "back"]);
+  }
+
+  if (intent === "point_left" || intent === "point_right") {
+    return findBestAnimation(["point", "gesture"]);
+  }
+
+  if (intent === "clap") {
+    return findBestAnimation(["clap", "celebrate", "applause"]);
+  }
+
+  return findBestAnimation(["idle", "breathing", "standing"]);
+}
+
 async function sendCommand() {
   const command = commandInput.value.trim();
 
   if (!command) {
     explanationText.textContent = "Please enter a command for the avatar.";
     intentText.textContent = "empty";
-    statusText.textContent = isAvatarLoaded
-      ? "Avatar ready."
-      : "Avatar not loaded yet.";
     return;
   }
 
@@ -147,38 +230,19 @@ async function sendCommand() {
     explanationText.textContent = data.explanation;
     intentText.textContent = data.intent;
 
-    if (isAvatarLoaded) {
-      handleCommandVisualization(data.intent);
-      statusText.textContent = `Ready. Suggested animation: ${data.animation}`;
+    const animationName = mapIntentToAnimation(data.intent);
+
+    if (animationName) {
+      playAnimation(animationName);
+      statusText.textContent = `Playing animation: ${animationName}`;
     } else {
-      statusText.textContent = "Command interpreted, but avatar is not loaded.";
+      statusText.textContent = "No matching animation found in this avatar.";
     }
   } catch (error) {
     console.error("Error sending command:", error);
     explanationText.textContent = "There was a problem contacting the backend.";
     intentText.textContent = "error";
     statusText.textContent = "Request failed.";
-  }
-}
-
-function handleCommandVisualization(intent) {
-  if (!avatar) return;
-
-  avatar.position.copy(avatarBasePosition);
-  avatar.rotation.set(0, 0, 0);
-
-  if (intent === "wave") {
-    avatar.rotation.y = 0.2;
-  } else if (intent === "point_left") {
-    avatar.rotation.y = 0.45;
-  } else if (intent === "point_right") {
-    avatar.rotation.y = -0.45;
-  } else if (intent === "walk_forward") {
-    avatar.position.z -= 0.35;
-  } else if (intent === "walk_backward") {
-    avatar.position.z += 0.35;
-  } else if (intent === "clap") {
-    avatar.rotation.y = 0.1;
   }
 }
 
@@ -192,6 +256,12 @@ commandInput.addEventListener("keydown", function (event) {
 
 function animate() {
   requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  if (mixer) {
+    mixer.update(delta);
+  }
+
   controls.update();
   renderer.render(scene, camera);
 }
